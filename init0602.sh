@@ -156,8 +156,10 @@ if [ "$CA_ACTIVATED" = "1" ]; then SCHEME="https"; else SCHEME="http"; fi
 backup_file() {
   local f="$1"
   [ -e "$f" ] || return 0
+  local bdir="/var/backups/linux-init"
+  $SUDO mkdir -p "$bdir"
   local b
-  b="${f}.bak.$(date +%s)"
+  b="${bdir}/$(printf '%s' "$f" | sed 's#/#_#g').bak.$(date +%s)"
   $SUDO cp -a "$f" "$b"
   log "已备份: $f -> $b"
 }
@@ -281,7 +283,7 @@ PKGS=(
   iputils-tracepath nano most screen less vim bzip2 lldpd mtr-tiny htop
   dnsutils zstd
 )
-$SUDO DEBIAN_FRONTEND=noninteractive apt-get -y install "${PKGS[@]}"
+$SUDO env DEBIAN_FRONTEND=noninteractive apt-get -y install "${PKGS[@]}"
 
 # 若此前 CA 未激活（极简系统刚装上 ca-certificates），现在激活，并把源切回 https
 if [ "$CA_ACTIVATED" != "1" ] && has update-ca-certificates; then
